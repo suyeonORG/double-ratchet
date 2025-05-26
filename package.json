@@ -1,0 +1,62 @@
+{
+  "name": "double-ratchet",
+  "version": "1.0.0",
+  "description": "A  (failed) TypeScript implementation of the Signal Double Ratchet protocol with modern cryptographic primitives (X25519, Ed25519, AES-GCM, SHA-512).",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "test": "mocha",
+    "prepare": "npm run build",
+    "clear": "rimraf dist/*",
+    "build": "tsc -b && npm run build:types",
+    "build:types": "tsc -p tsconfig.types.json",
+    "rebuild": "npm run clear && npm run build",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "prepub": "npm run lint && npm run build",
+    "postpub": "git push && git push --tags origin master",
+    "pub": "npm version patch && npm publish",
+    "prepub:next": "npm run lint && npm run build",
+    "pub:next": "npm version prerelease --preid=next && npm publish --tag next",
+    "postpub:next": "git push",
+    "sync": "git ac && git pull --rebase && git push",
+    "coverage": "nyc npm test",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/suyeonORG/double-ratchet"
+  },
+  "keywords": [
+    "diffie-hellman",
+    "x25519",
+    "ed25519",
+    "ecc",
+    "encryption",
+    "cryptography",
+    "webcrypto",
+    "session",
+    "integrity",
+    "messaging",
+    "double-ratchet"
+  ],
+  "author": "@suyeonORG, @ChaosArnhug, @KTBASECURITY, @Draimy",
+  "license": "MIT",
+  "dependencies": {
+    "@noble/curves": "^1.9.1",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "eslint": "^9.27.0",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,25 @@
+
+# VS Code
+.vscode
+
+# coverall
+.nyc_output
+coverage
+
+# npm
+node_modules
+
+# circleci
+.circleci
+
+# build
+out
+src
+examples
+test
+cSpell.json
+rollup.*.js
+ts*.json
+
+# MAC OS
+.DS_Store
