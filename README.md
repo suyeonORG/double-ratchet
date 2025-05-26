@@ -120,8 +120,8 @@ Try the **Double Ratchet** in action with our interactive client-side browser de
 Or install it locally:
 
 ```bash
-git clone https://github.com/suyeonORG/final-triple-ratchet
-cd final-triple-ratchet
+git clone https://github.com/suyeonORG/double-ratchet
+cd double-ratchet
 npm install
 npm run build
 npm link
@@ -186,104 +186,6 @@ graph LR
 **Note**: The Double Ratchet has a known theoretical vulnerability where an adversary who compromises a party twice (before and after a DH step) can decrypt messages sent between those compromises. This is a minor limitation that affects security in very specific attack scenarios.
 
 The CKA Attack demo shows this vulnerability in action.
-
-## **Quick Start**
-
-### Basic Usage
-
-```typescript
-import {
-  Identity,
-  AsymmetricRatchet,
-  PreKeyBundleProtocol,
-  setEngine,
-} from "double-ratchet";
-import { Crypto } from "@peculiar/webcrypto";
-import { Convert } from "pvtsutils";
-
-// Initialize WebCrypto
-setEngine("WebCrypto", globalThis.crypto || new Crypto());
-
-// 1. Create identities with X25519/Ed25519
-const alice = await Identity.create(1, 1, 1);
-const bob = await Identity.create(2, 1, 1);
-
-// 2. Alice creates and shares PreKey bundle
-const bundle = new PreKeyBundleProtocol();
-bundle.registrationId = alice.id;
-await bundle.identity.fill(alice);
-
-const signedPreKey = alice.signedPreKeys[0];
-bundle.preKeySigned.id = 0;
-bundle.preKeySigned.key = signedPreKey.publicKey;
-await bundle.preKeySigned.sign(alice.signingKey.privateKey);
-
-const bundleBytes = await bundle.exportProto();
-
-// 3. Bob imports bundle and creates ratchet
-const importedBundle = await PreKeyBundleProtocol.importProto(bundleBytes);
-const bobRatchet = await AsymmetricRatchet.create(bob, importedBundle);
-
-// 4. Encrypt message (Bob -> Alice)
-const message = "Hello Alice! This is secured with Double Ratchet!";
-const encrypted = await bobRatchet.encrypt(Convert.FromUtf8String(message));
-const messageBytes = await encrypted.exportProto();
-
-// 5. Alice receives and decrypts
-const receivedMessage = await PreKeyMessageProtocol.importProto(messageBytes);
-const aliceRatchet = await AsymmetricRatchet.create(alice, receivedMessage);
-const decrypted = await aliceRatchet.decrypt(receivedMessage.signedMessage);
-
-console.log(Convert.ToUtf8String(decrypted)); // "Hello Alice! This is secured with Double Ratchet!"
-```
-
-### Advanced: Out-of-Order Messages
-
-```typescript
-// Double Ratchet handles ANY message order seamlessly
-const messages = [];
-
-// Alice sends 5 messages
-for (let i = 1; i <= 5; i++) {
-  const msg = await aliceRatchet.encrypt(
-    Convert.FromUtf8String(`Message ${i}`)
-  );
-  messages.push(await msg.exportProto());
-}
-
-// Bob receives messages in random order: [1, 4, 2, 5, 3]
-const order = [0, 3, 1, 4, 2]; // Indices for messages 1, 4, 2, 5, 3
-
-for (const index of order) {
-  const proto = await MessageSignedProtocol.importProto(messages[index]);
-  const decrypted = await bobRatchet.decrypt(proto);
-  console.log(Convert.ToUtf8String(decrypted)); // All decrypt successfully!
-}
-
-// Check skipped message statistics
-console.log(bobRatchet.getSkippedMessageStats());
-// { totalSkippedKeys: 3, ratchetSteps: 1, ratchetKeyIds: 1 }
-```
-
-## **Acknowledgments**
-
-### Contributors
-
-- **Signal Foundation** - Double Ratchet protocol specification
-- **Petit Christophe (ULB) | Lerman Liran (ULB)** - Academic supervision
-- **@peculiarventures** - Initial 2key-ratchet library foundation
-
-### Original Implementation
-
-- **[2key-ratchet](https://github.com/PeculiarVentures/2key-ratchet)** by Peculiar Ventures
-- **Trevor Perrin & Moxie Marlinspike** - Signal protocol design
-- **Signal Foundation** - Protocol specifications
-
-### Cryptographic Libraries
-
-- **[@noble/curves](https://github.com/paulmillr/noble-curves)** - Modern curve implementations
-
----
 
 ## **License**
 
